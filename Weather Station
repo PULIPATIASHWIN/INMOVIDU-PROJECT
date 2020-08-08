@@ -1,0 +1,78 @@
+#include <LiquidCrystal.h>//LiquidCrystal Library
+//This library allows an Arduino board to control LiquidCrystal displays (LCDs) based on the Hitachi HD44780 (or a compatible) chipset, which is found on most text-based LCDs.
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //The display can be controlled using 4 or 8 data lines. If the former, omit the pin numbers for d0 to d3 and leave those lines unconnected.
+int wLED = 9;           //The LED connected to pinNo.9
+int lightLevel = 0;    //Initializing lightLevel initially zero.
+int LDR = A0;         //LDR is also called Photoresistor. It's connected to the Analog Pin->A0
+int TMP = A1;        //Temperature Sensor is connected to the Analog Pin->A1 
+int rLED = 6;       //The LED connected to pinNo.6
+int bLED = 7;      //The LED connected to pinNo.7
+int gLED = 8;     //The LED connected to pinNo.8
+int sensorPin = A1;    //Testing for sensorPin A1
+void setup() 
+{
+  Serial.begin(9600);        //Baud rate of arduino is 9600.
+  lcd.begin (16, 2);        //The part 16×2 means that the LCD has 2 lines, and can display 16 characters per line.
+  pinMode(wLED, OUTPUT);    //Connecting pinNo.9 to output.
+  pinMode(rLED, OUTPUT);     //Connecting pinNo.6 to output.
+  pinMode(bLED, OUTPUT);     //Connecting pinNo.7 to output.
+  pinMode(gLED, OUTPUT);    //Connecting pinNo.8 to output.
+}
+void loop() 
+{
+  int reading = analogRead(sensorPin);  //Reading the Analog value of A1
+  float voltage = reading * 5.0;       // converting that reading to voltage, for 3.3v arduino use 3.3
+  voltage /= 1024.0;                  //voltage=voltage/1024.0
+  Serial.print(voltage);             // print out the voltage
+  Serial.println(" volts");         //printing voltage in volts
+ 
+  // now print out the temperature:
+  float Celsiustemp = (voltage - 0.5) * 100 ;     //converting from 10 mv per degree with 500 mV offset  //to degrees ((voltage - 500mV) times 100)
+Serial.print(Celsiustemp);                       //Print the celsiustemp 
+Serial.println(" degrees C");                     //Printing the temperature in celsius
+ 
+  lightLevel = analogRead(LDR);    //Reading the Analog value of A0  
+  Serial.println(lightLevel);     //Printing the Analog value of A0
+  
+  if (lightLevel < 10)     //if the lightLevel is <10 then proceed else go for the other option and display it.
+  {
+    digitalWrite(wLED, HIGH);   //Writing a HIGH value to the digital pin9.
+  } 
+  else 
+  {
+    digitalWrite(wLED, LOW);  //Writing a LOW value to the digital pin9.
+  }
+  
+  lcd.clear();          //Clears the LCD screen and positions the cursor in the upper-left corner (first row and first column) of the display. You can use this function to display different words in a loop.
+lcd.setCursor(0, 0);   //To move the cursor, just call setCursor() with a row and column position.( // top left lcd)
+  
+  if (Celciustemp < 2)   //if the Celsiustemp is <2 then proceed else go for the other option and display it. 
+  {
+    digitalWrite(bLED, HIGH);      //Writing a HIGH value to the digital pin7.
+    digitalWrite(rLED, LOW);     //Writing a LOW value to the digital pin6.
+    lcd.print("Cold Weather");   //Printing Cold Weather
+    lcd.setCursor(0, 1);      //To move the cursor, just call setCursor() with a row and column position.( // bottom left lcd)
+lcd.print(Celsiustemp);    //Printing the Celsius temperature value
+tone(10, 260);            //Piezo plays a tone.
+  } 
+  else if (Celciustemp >= 2 && Celciustemp < 45)  //if the above condition isn't satisfied,go for this condition or else go the the other
+  {
+    digitalWrite(bLED, LOW);      //Writing a LOW value to the digital pin7.
+    digitalWrite(rLED, LOW);     //Writing a LOW value to the digital pin6.
+    lcd.setCursor(0, 0);        //To move the cursor, just call setCursor() with a row and column position.( // top left lcd)
+lcd.print("Normal Weather");   //Printing Normal Weather
+noTone(10);                   //Piezo doesn't play a tone.
+  }
+ 
+  else      //if the above condition isn't satisfied,go for this condition
+  {
+    digitalWrite(rLED, HIGH);    //Writing a HIGH value to the digital pin6.
+    digitalWrite(bLED, LOW);    //Writing a LOW value to the digital pin7.
+    lcd.setCursor(0, 0);       //To move the cursor, just call setCursor() with a row and column position.( // top left lcd)
+lcd.print("Hot Weather");      //Printing HotWeather
+lcd.setCursor(0, 1);          //To move the cursor, just call setCursor() with a row and column position.( // bottom left lcd)
+lcd.print(Celsiustemp);     //Printing the Celsiustemp value
+tone(10, 260);            //Piezo plays a tone
+  }
+  delay (500);
+  }
